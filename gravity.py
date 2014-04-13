@@ -25,24 +25,25 @@ def distance(speed, time):
 
 class Rectangle(object):
     global RectList
-    def __init__(self, name, position, speed):
+    def __init__(self, name, position, speed, dropped):
         self.name = name
         self.position = position
         self.speed = speed
+        self.dropped = dropped
         self.rect = (int(self.position[0]), int(self.position[1]), 40, 40)
     def render(self, frameTime):
         pygame.draw.rect(windowSurface, BLUE, self.rect, 4)
         self.position[1] = self.position[1] + distance(self.speed, frameTime)
         self.speed = self.speed + 0.005
         if self.position[1] > 860:
-            self.speed = 0
+            self.speed = (self.speed / 1) * -1
         self.rect = pygame.Rect(int(self.position[0]), int(self.position[1]), 40, 40)
     def collision(self):
         for rect in RectList:
             if self.name == rect.name:
                 continue
             if self.rect.colliderect(rect.rect) == True:
-                self.speed = 0
+                self.speed = (self.speed / 1) * -1
 
 player = pygame.image.load('player.png')
 background = pygame.image.load('bg.png')
@@ -70,14 +71,15 @@ while True:
         playerX = playerX + distance(0.5, frameTime)
 
     if clicked == True and pygame.time.get_ticks() - lastDrop >= 350:
-        RectList.append(Rectangle(loopTrack, [playerX, 61], 0.05))
-        print len(RectList)
+        RectList.append(Rectangle(loopTrack, [playerX, 61], 0.05, pygame.time.get_ticks()))
         clicked = False
-        lastDrop = pygame.time.get_ticks()
+        lastDrop = pygame.time.get_ticks()   
 
     for Rect in RectList:
         Rect.render(frameTime)
         Rect.collision()
+        if pygame.time.get_ticks() - Rect.dropped >= 500000:
+            RectList.remove(Rect)
 
     windowSurface.blit(player, (playerX, 10))
     
