@@ -19,6 +19,9 @@ RED = (255, 0, 0)
 GREEN = (0, 100, 0)
 BLUE = (0, 0, 255)
 
+ACCELERATION = 0.01
+BOUNCE = 1.05
+
 def distance(speed, time):
     distance = time * speed
     return distance
@@ -32,21 +35,24 @@ class Rectangle(object):
         self.dropped = dropped
         self.rect = (int(self.position[0]), int(self.position[1]), 40, 40)
     def render(self, frameTime):
-        pygame.draw.rect(windowSurface, BLUE, self.rect, 4)
+        windowSurface.blit(apple, (self.position[0], self.position[1] - 10))
         self.position[1] = self.position[1] + distance(self.speed, frameTime)
-        self.speed = self.speed + 0.005
+        self.speed = self.speed + ACCELERATION
         if self.position[1] > 860:
-            self.speed = (self.speed / 1) * -1
+            self.speed = (self.speed / BOUNCE) * -1
+        elif self.position[1] < 0:
+            self.position[1] = 0
         self.rect = pygame.Rect(int(self.position[0]), int(self.position[1]), 40, 40)
     def collision(self):
         for rect in RectList:
             if self.name == rect.name:
                 continue
             if self.rect.colliderect(rect.rect) == True:
-                self.speed = (self.speed / 1) * -1
+                self.speed = (self.speed / BOUNCE) * -1
 
 player = pygame.image.load('player.png')
 background = pygame.image.load('bg.png')
+apple = pygame.image.load('apple.png')
 
 playerX = 300
 
@@ -63,7 +69,8 @@ while True:
     currentTime = pygame.time.get_ticks()
     mousePos = pygame.mouse.get_pos()
     
-    windowSurface.fill(GREEN)
+    windowSurface.blit(background, (0, 0))
+    #windowSurface.fill(GREEN)
 
     if pygame.key.get_pressed()[97] == True:
         playerX = playerX - distance(0.5, frameTime)
@@ -78,7 +85,7 @@ while True:
     for Rect in RectList:
         Rect.render(frameTime)
         Rect.collision()
-        if pygame.time.get_ticks() - Rect.dropped >= 500000:
+        if mousePos[0] >= Rect.position[0] and mousePos[0] <= Rect.position[0] + 40 and mousePos[1] >= Rect.position[1] and mousePos[1] <= Rect.position[1] + 40 and pygame.mouse.get_pressed()[0] == True:
             RectList.remove(Rect)
 
     windowSurface.blit(player, (playerX, 10))
